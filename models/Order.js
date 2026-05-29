@@ -23,14 +23,13 @@ const orderSchema = new mongoose.Schema({
 });
 
 // При создании заказа добавляем первый статус в историю
-orderSchema.pre('save', function(next) {
+orderSchema.pre('save', function() {
   if (this.isNew) {
     this.statusHistory.push({
       status: this.status,
       date: new Date()
     });
   }
-  next();
 });
 
 module.exports = mongoose.model('Order', orderSchema);

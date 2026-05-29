@@ -28,8 +28,14 @@ const createOrder = async (req, res) => {
     await order.save();
     res.status(201).json(order);
   } catch (error) {
-    res.status(500).json({ message: 'Ошибка сервера' });
-  }
+
+    console.error('CREATE ORDER ERROR:', error);
+
+    res.status(500).json({
+      message: 'Ошибка сервера',
+      error: error.message
+   });
+}
 };
 
 // Получение заказов пользователя
@@ -39,7 +45,12 @@ const getUserOrders = async (req, res) => {
       .sort({ createdAt: -1 });
     res.json(orders);
   } catch (error) {
-    res.status(500).json({ message: 'Ошибка сервера' });
+    console.error('ORDER ERROR:', error);
+
+    res.status(500).json({
+      message: 'Ошибка сервера',
+      error: error.message
+    });
   }
 };
 
@@ -56,9 +67,13 @@ const getOrderDetails = async (req, res) => {
     }
 
     res.json(order);
-  } catch (error) {
-    res.status(500).json({ message: 'Ошибка сервера' });
-  }
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ 
+        message: 'Ошибка сервера',
+        error: error.message
+      });
+    }
 };
 
 module.exports = { createOrder, getUserOrders, getOrderDetails };

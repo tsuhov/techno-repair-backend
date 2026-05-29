@@ -1,79 +1,348 @@
-const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+
+const crypto = require('crypto');
+
 const User = require('../models/User');
-const { generateToken } = require('../utils/jwtUtils');
 
-// Регистрация пользователя
+
+// ======================
+// REGISTER
+// ======================
+
 const register = async (req, res) => {
-  try {
-    const { name, email, password } = req.body;
 
-    // Проверка существующего пользователя
-    const existingUser = await User.findOne({ email });
+  try {
+
+    console.log('REGISTER START');
+
+
+    const {
+
+      name,
+
+      email,
+
+      password
+
+    } = req.body;
+
+
+    const existingUser =
+      await User.findOne({ email });
+
+
     if (existingUser) {
-      return res.status(400).json({ message: 'Пользователь с таким email уже существует' });
+
+      return res.status(400).json({
+
+        message:
+          'Пользователь уже существует'
+
+      });
+
     }
 
-    // Хеширование пароля
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Создание нового пользователя
     const user = new User({
+
       name,
+
       email,
-      password: hashedPassword
+
+      password
+
     });
+
 
     await user.save();
 
-    // Генерация токена
-    const token = generateToken(user._id);
+    console.log('USER SAVED');
+
 
     res.status(201).json({
-      token,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email
-      }
+
+      message:
+        'Регистрация успешна'
+
     });
+
   } catch (error) {
-    res.status(500).json({ message: 'Ошибка сервера' });
+
+    console.error(
+      'REGISTER ERROR:',
+      error
+    );
+
+
+    res.status(500).json({
+
+      message:
+        'Ошибка сервера'
+
+    });
+
   }
+
 };
 
-// Авторизация пользователя
+
+// ======================
+// LOGIN
+// ======================
+
 const login = async (req, res) => {
+
   try {
-    const { email, password } = req.body;
 
-    // Поиск пользователя
-    const user = await User.findOne({ email });
+    console.log('LOGIN START');
+
+
+    const {
+
+      email,
+
+      password
+
+    } = req.body;
+
+
+    console.log('EMAIL:', email);
+
+
+    const user =
+      await User.findOne({ email });
+
+
+    console.log('USER:', user);
+
+
     if (!user) {
-      return res.status(400).json({ message: 'Неверные учетные данные' });
+
+      console.log('USER NOT FOUND');
+
+
+      return res.status(400).json({
+
+        message:
+          'Неверный email или пароль'
+
+      });
+
     }
 
-    // Проверка пароля
-    const isMatch = await bcrypt.compare(password, user.password);
+
+    const isMatch =
+      await user.comparePassword(password);
+
+
+    console.log(
+      'PASSWORD MATCH:',
+      isMatch
+    );
+
+
     if (!isMatch) {
-      return res.status(400).json({ message: 'Неверные учетные данные' });
+
+      return res.status(400).json({
+
+        message:
+          'Неверный email или пароль'
+
+      });
+
     }
 
-    // Генерация токена
-    const token = generateToken(user._id);
+
+    const token = jwt.sign(
+
+      {
+
+        userId:
+          user._id
+
+      },
+
+      process.env.JWT_SECRET,
+
+      {
+
+        expiresIn:
+          '7d'
+
+      }
+
+    );
+
+
+    console.log('LOGIN SUCCESS');
+
 
     res.json({
+
       token,
+
       user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role
+
+        id:
+          user._id,
+
+        name:
+          user.name,
+
+        email:
+          user.email,
+
+        role:
+          user.role
+
       }
+
     });
+
   } catch (error) {
-    res.status(500).json({ message: 'Ошибка сервера' });
+
+    console.error(
+      'LOGIN ERROR:',
+      error
+    );
+
+
+    res.status(500).json({
+
+      message:
+        'Ошибка сервера'
+
+    });
+
   }
+
 };
 
-module.exports = { register, login };
+
+// ======================
+// VERIFY EMAIL
+// ======================
+
+const verifyEmail = async (
+  req,
+  res
+) => {
+
+  try {
+
+    res.json({
+
+      message:
+        'Email verification временно отключен'
+
+    });
+
+  } catch (error) {
+
+    console.error(
+      'VERIFY ERROR:',
+      error
+    );
+
+
+    res.status(500).json({
+
+      message:
+        'Ошибка сервера'
+
+    });
+
+  }
+
+};
+
+
+// ======================
+// FORGOT PASSWORD
+// ======================
+
+const forgotPassword = async (
+  req,
+  res
+) => {
+
+  try {
+
+    res.json({
+
+      message:
+        'Сброс пароля временно отключен'
+
+    });
+
+  } catch (error) {
+
+    console.error(
+      'FORGOT ERROR:',
+      error
+    );
+
+
+    res.status(500).json({
+
+      message:
+        'Ошибка сервера'
+
+    });
+
+  }
+
+};
+
+
+// ======================
+// RESET PASSWORD
+// ======================
+
+const resetPassword = async (
+  req,
+  res
+) => {
+
+  try {
+
+    res.json({
+
+      message:
+        'Reset password временно отключен'
+
+    });
+
+  } catch (error) {
+
+    console.error(
+      'RESET ERROR:',
+      error
+    );
+
+
+    res.status(500).json({
+
+      message:
+        'Ошибка сервера'
+
+    });
+
+  }
+
+};
+
+
+module.exports = {
+
+  register,
+
+  login,
+
+  verifyEmail,
+
+  forgotPassword,
+
+  resetPassword
+
+};
